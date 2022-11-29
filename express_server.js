@@ -12,8 +12,6 @@ const generateRandomString = function() {
   return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
 };
 
-console.log(generateRandomString());
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -48,8 +46,11 @@ app.get("/urls/:id", (req, res) => {
 });
 //the data in the input field will be avaialbe to us in the req.body.longURL variable
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const randomID = generateRandomString();
+  //the new  the id-longURL key-value pair are saved to the urlDatabase
+  urlDatabase[randomID] = req.body.longURL;
+  res.statusCode = 200;
+  res.redirect(`/urls/${randomID}`);
 });
 
 app.listen(PORT, () => {
