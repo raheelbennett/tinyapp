@@ -24,6 +24,10 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+//presents the form to the user
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
 //This page will display a single URL and its shortened form.
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
