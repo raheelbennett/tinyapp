@@ -2,7 +2,17 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+//template engine
 app.set("view engine", "ejs");
+//body-parser middleware for POST requests
+app.use(express.urlencoded({ extended: true }));
+
+//returns a string of 6 random alphanumeric characters
+const generateRandomString = function() {
+  return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
+};
+
+console.log(generateRandomString());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -35,6 +45,11 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id]
   };
   res.render("urls_show", templateVars);
+});
+//the data in the input field will be avaialbe to us in the req.body.longURL variable
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
 app.listen(PORT, () => {
