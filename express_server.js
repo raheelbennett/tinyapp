@@ -32,16 +32,16 @@ app.get("/hello", (req, res) => {
 });
 app.get("/urls", (req, res) => {
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
-  const templateVars = { 
+  const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"] 
+    username: req.cookies["username"]
   };
   res.render("urls_index", templateVars);
 });
 //presents the form to the user
 app.get("/urls/new", (req, res) => {
-  const templateVars = { 
-    username: req.cookies["username"] 
+  const templateVars = {
+    username: req.cookies["username"]
   };
   res.render("urls_new", templateVars);
 });
@@ -50,7 +50,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"] 
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -84,7 +84,6 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 //setting the cookie named "username" to the value submitted in the request body via login form.
 app.post("/login", (req, res) => {
-  username = req.body.username;
   res.cookie("username", req.body.username);
   res.redirect("/urls");
 });
