@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -6,6 +7,8 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 //body-parser middleware for POST requests
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
 
 //returns a string of 6 random alphanumeric characters
 const generateRandomString = function() {
@@ -29,18 +32,25 @@ app.get("/hello", (req, res) => {
 });
 app.get("/urls", (req, res) => {
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"] 
+  };
   res.render("urls_index", templateVars);
 });
 //presents the form to the user
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { 
+    username: req.cookies["username"] 
+  };
+  res.render("urls_new", templateVars);
 });
 //This page will display a single URL and its shortened form.
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies["username"] 
   };
   res.render("urls_show", templateVars);
 });
@@ -55,7 +65,6 @@ app.post("/urls", (req, res) => {
 //redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  console.log(longURL);
   if (!longURL) {
     res.statusCode = 404;
     res.send("not found");
@@ -73,10 +82,19 @@ app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect("/urls");
 });
+//setting the cookie named "username" to the value submitted in the request body via login form.
+app.post("/login", (req, res) => {
+  username = req.body.username;
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
+//implementing logout funtion that will clear the username cookie
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-//this is supposed to be main branch
