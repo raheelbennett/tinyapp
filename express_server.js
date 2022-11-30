@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -6,6 +7,8 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 //body-parser middleware for POST requests
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
 
 //returns a string of 6 random alphanumeric characters
 const generateRandomString = function() {
@@ -55,7 +58,6 @@ app.post("/urls", (req, res) => {
 //redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  console.log(longURL);
   if (!longURL) {
     res.statusCode = 404;
     res.send("not found");
@@ -72,6 +74,11 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect("/urls");
+});
+app.post("/login", (req, res) => {
+  username = req.body.username;
+  res.cookie
+  console.log(username);
 });
 
 app.listen(PORT, () => {
