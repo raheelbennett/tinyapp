@@ -52,6 +52,17 @@ app.post("/urls", (req, res) => {
   res.statusCode = 200;
   res.redirect(`/urls/${randomID}`);
 });
+//redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  console.log(longURL);
+  if (!longURL) {
+    res.statusCode = 404;
+    res.send("not found");
+  } else {
+    res.redirect(longURL);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
