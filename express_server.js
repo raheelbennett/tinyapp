@@ -75,10 +75,11 @@ app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect("/urls");
 });
+//setting the cookie named "username" to the value submitted in the request body via login form.
 app.post("/login", (req, res) => {
   username = req.body.username;
-  res.cookie
-  console.log(username);
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
