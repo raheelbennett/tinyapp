@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 //returns a string of 6 random alphanumeric characters
-const generateRandomString = function () {
+const generateRandomString = () => {
   return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
 };
 
@@ -31,6 +31,14 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+};
+
+const userLookup = (searchThisEmail) => {
+  for (user in users) {
+    if (users[user].email === searchThisEmail) {
+      return users[user];
+    }
+  } return null;
 };
 
 app.get("/", (req, res) => {
@@ -117,6 +125,14 @@ app.post("/register", (req, res) => {
   const id = "user" + generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  if (!email || !password) {
+    res.status(400);
+    res.send('Email Address and Password required');
+  } 
+  if (userLookup(email)) {
+    res.status(400);
+    res.send('Email Address already in use');
+  } else {
   users[id] = {
     id,
     email,
@@ -124,6 +140,7 @@ app.post("/register", (req, res) => {
   }
   res.cookie("user_id", id);
   res.redirect("/urls");
+}
 });
 
 app.listen(PORT, () => {
