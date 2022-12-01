@@ -49,8 +49,7 @@ app.get("/urls", (req, res) => {
   console.log(user);
   const templateVars = {
     user: users[req.cookies.user_id],
-    urls: urlDatabase,
-    username: req.cookies["username"]
+    urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
@@ -58,7 +57,6 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
-    username: req.cookies["username"]
   };
   res.render("urls_new", templateVars);
 });
@@ -68,7 +66,6 @@ app.get("/urls/:id", (req, res) => {
     user: users[req.cookies.user_id],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -102,12 +99,12 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 //setting the cookie named "username" to the value submitted in the request body via login form.
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  // res.cookie("username", req.body.username);
   res.redirect("/urls");
 });
-//implementing logout funtion that will clear the username cookie
+//implementing logout funtion that will clear the user_id cookie
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
