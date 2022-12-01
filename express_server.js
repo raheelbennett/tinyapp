@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 //returns a string of 6 random alphanumeric characters
-const generateRandomString = function() {
+const generateRandomString = function () {
   return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
 };
 
@@ -20,6 +20,18 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -32,7 +44,11 @@ app.get("/hello", (req, res) => {
 });
 app.get("/urls", (req, res) => {
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
+  const user = users[req.cookies.user_id];
+  console.log(users);
+  console.log(user);
   const templateVars = {
+    user: users[req.cookies.user_id],
     urls: urlDatabase,
     username: req.cookies["username"]
   };
@@ -41,6 +57,7 @@ app.get("/urls", (req, res) => {
 //presents the form to the user
 app.get("/urls/new", (req, res) => {
   const templateVars = {
+    user: users[req.cookies.user_id],
     username: req.cookies["username"]
   };
   res.render("urls_new", templateVars);
@@ -48,6 +65,7 @@ app.get("/urls/new", (req, res) => {
 //This page will display a single URL and its shortened form.
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
+    user: users[req.cookies.user_id],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
     username: req.cookies["username"]
@@ -94,9 +112,21 @@ app.post("/logout", (req, res) => {
 });
 
 
-//Registration page
+//Registration page and endpoint handler
 app.get("/register", (req, res) => {
   res.render("register");
+});
+app.post("/register", (req, res) => {
+  const id = "user" + generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  users[id] = {
+    id,
+    email,
+    password
+  }
+  res.cookie("user_id", id);
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
