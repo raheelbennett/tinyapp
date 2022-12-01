@@ -5,21 +5,28 @@ const PORT = 8080; // default port 8080
 
 //template engine
 app.set("view engine", "ejs");
-//body-parser middleware for POST requests
-app.use(express.urlencoded({ extended: true }));
 
+//middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-//returns a string of 6 random alphanumeric characters
+//helper functions
 const generateRandomString = () => {
   return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
 };
+const userLookup = (searchThisEmail) => {
+  for (const user in users) {
+    if (users[user].email === searchThisEmail) {
+      return users[user];
+    }
+  } return null;
+};
 
+//databases
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -33,14 +40,8 @@ const users = {
   },
 };
 
-const userLookup = (searchThisEmail) => {
-  for (const user in users) {
-    if (users[user].email === searchThisEmail) {
-      return users[user];
-    }
-  } return null;
-};
 
+//random endpoint handlers
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -50,6 +51,9 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+
+///urls endponint handlers
 app.get("/urls", (req, res) => {
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
   const templateVars = {
@@ -58,7 +62,14 @@ app.get("/urls", (req, res) => {
   };
   res.render("urls_index", templateVars);
 });
-//presents the form to the user
+//the data in the input field will be avaialbe to us in the req.body.longURL variable
+app.post("/urls", (req, res) => {
+  const randomID = generateRandomString();
+  //the new  the id-longURL key-value pair are saved to the urlDatabase
+  urlDatabase[randomID] = req.body.longURL;
+  res.statusCode = 200;
+  res.redirect(`/urls/${randomID}`);
+});
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
@@ -73,14 +84,6 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id],
   };
   res.render("urls_show", templateVars);
-});
-//the data in the input field will be avaialbe to us in the req.body.longURL variable
-app.post("/urls", (req, res) => {
-  const randomID = generateRandomString();
-  //the new  the id-longURL key-value pair are saved to the urlDatabase
-  urlDatabase[randomID] = req.body.longURL;
-  res.statusCode = 200;
-  res.redirect(`/urls/${randomID}`);
 });
 //redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
 app.get("/u/:id", (req, res) => {
@@ -102,6 +105,8 @@ app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect("/urls");
 });
+
+
 //Login page and endpoint handler
 app.get("/login", (req, res) => {
   res.render("user_login");
@@ -128,12 +133,10 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
-    res.status(400);
-    res.send('Please enter a valid Email Address and Password to register');
+    return res.status(400).send('Please enter a valid Email Address and Password to register');
   }
   if (userLookup(email)) {
-    res.status(400);
-    res.send('Email Address already in use');
+    return res.status(400).send('Email Address already in use');
   } else {
     users[id] = {
       id,
@@ -144,6 +147,7 @@ app.post("/register", (req, res) => {
     res.redirect("/urls");
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
