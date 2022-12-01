@@ -65,16 +65,24 @@ app.get("/urls", (req, res) => {
 //the data in the input field will be avaialbe to us in the req.body.longURL variable
 app.post("/urls", (req, res) => {
   const randomID = generateRandomString();
+  if (!req.cookies.user_id) {
+   return res.send("Need to be logged in to shorten URLs");
+  } else {
   //the new  the id-longURL key-value pair are saved to the urlDatabase
   urlDatabase[randomID] = req.body.longURL;
   res.status(200);
   res.redirect(`/urls/${randomID}`);
+  }
 });
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
   };
+  if (!templateVars.user) {
+    res.redirect("/login");
+  } else {
   res.render("urls_new", templateVars);
+  }
 });
 //This page will display a single URL and its shortened form.
 app.get("/urls/:id", (req, res) => {
@@ -89,8 +97,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   if (!longURL) {
-    res.status(404);
-    res.send("not found");
+    res.status(404).send("This short URL was not found in our system");
   } else {
     res.redirect(longURL);
   }
@@ -112,7 +119,11 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
   };
+  if (templateVars.user) {
+    res.redirect("/urls");
+  } else {
   res.render("user_login", templateVars);
+  }
 });
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -139,7 +150,11 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
   };
+  if (templateVars.user) {
+    res.redirect("/urls");
+  } else {
   res.render("user_register", templateVars);
+  }
 });
 app.post("/register", (req, res) => {
   const id = "user" + generateRandomString();
