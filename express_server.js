@@ -67,7 +67,7 @@ app.post("/urls", (req, res) => {
   const randomID = generateRandomString();
   //the new  the id-longURL key-value pair are saved to the urlDatabase
   urlDatabase[randomID] = req.body.longURL;
-  res.statusCode = 200;
+  res.status(200);
   res.redirect(`/urls/${randomID}`);
 });
 app.get("/urls/new", (req, res) => {
@@ -109,24 +109,37 @@ app.post("/urls/:id/edit", (req, res) => {
 
 //Login page and endpoint handler
 app.get("/login", (req, res) => {
-  res.render("user_login");
+  const templateVars = {
+    user: users[req.cookies.user_id],
+  };
+  res.render("user_login", templateVars);
 });
 app.post("/login", (req, res) => {
-  // res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+  const userFound = userLookup(email);
+  if (userFound && userFound.password === password) {
+    res.cookie("user_id", userFound.id);
+    res.redirect("/urls");
+  } else {
+    return res.status(403).send("The information provided does not match our records. Login Failed!")
+  }
 });
 
 
-//implementing logout funtion that will clear the user_id cookie
+//handing /logout endpoint
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 
 //Registration page and endpoint handler
 app.get("/register", (req, res) => {
-  res.render("user_register");
+  const templateVars = {
+    user: users[req.cookies.user_id],
+  };
+  res.render("user_register", templateVars);
 });
 app.post("/register", (req, res) => {
   const id = "user" + generateRandomString();
