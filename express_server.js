@@ -34,7 +34,7 @@ const users = {
 };
 
 const userLookup = (searchThisEmail) => {
-  for (user in users) {
+  for (const user in users) {
     if (users[user].email === searchThisEmail) {
       return users[user];
     }
@@ -52,9 +52,6 @@ app.get("/hello", (req, res) => {
 });
 app.get("/urls", (req, res) => {
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
-  const user = users[req.cookies.user_id];
-  console.log(users);
-  console.log(user);
   const templateVars = {
     user: users[req.cookies.user_id],
     urls: urlDatabase
@@ -89,7 +86,7 @@ app.post("/urls", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   if (!longURL) {
-    res.statusCode = 404;
+    res.status(404);
     res.send("not found");
   } else {
     res.redirect(longURL);
@@ -105,11 +102,16 @@ app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect("/urls");
 });
-//setting the cookie named "username" to the value submitted in the request body via login form.
+//Login page and endpoint handler
+app.get("/login", (req, res) => {
+  res.render("user_login");
+});
 app.post("/login", (req, res) => {
   // res.cookie("username", req.body.username);
   res.redirect("/urls");
 });
+
+
 //implementing logout funtion that will clear the user_id cookie
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
@@ -119,7 +121,7 @@ app.post("/logout", (req, res) => {
 
 //Registration page and endpoint handler
 app.get("/register", (req, res) => {
-  res.render("register");
+  res.render("user_register");
 });
 app.post("/register", (req, res) => {
   const id = "user" + generateRandomString();
@@ -127,20 +129,20 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   if (!email || !password) {
     res.status(400);
-    res.send('Email Address and Password required');
-  } 
+    res.send('Please enter a valid Email Address and Password to register');
+  }
   if (userLookup(email)) {
     res.status(400);
     res.send('Email Address already in use');
   } else {
-  users[id] = {
-    id,
-    email,
-    password
+    users[id] = {
+      id,
+      email,
+      password
+    };
+    res.cookie("user_id", id);
+    res.redirect("/urls");
   }
-  res.cookie("user_id", id);
-  res.redirect("/urls");
-}
 });
 
 app.listen(PORT, () => {
