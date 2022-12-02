@@ -26,7 +26,3 @@ TinyApp is a full stack web application built with Node and Express that allows 
 - Users must have registered an account to initial use. The app will automatically log user in upon registration.
 - URLs created by each user will only be visible to them and can only be edited by them. However the short URLs can be used by anyone to be redirected to the long URL. 
 - The format for short URLS is: http://localhost:8080/u/b2xVn2 ("b2xVn2" is an example of URL ID and will be unique for each shortened URL).
-
-
-
-https://github.com/raheelbennett/tinyapp/blob/master/docs/create_new_url.PNG?raw=true
