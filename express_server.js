@@ -101,7 +101,6 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: req.cookies.user_id
     }
-    console.log(urlDatabase);
     res.status(200);
     res.redirect(`/urls/${randomID}`);
   }
@@ -116,10 +115,11 @@ app.get("/urls/new", (req, res) => {
     res.render("urls_new", templateVars);
   }
 });
+
 //This page will display a single URL and its shortened form.
-//Only authorized user can view their url page.
+//Users must be logged in and only authorized user can view their url page.
 app.get("/urls/:id", (req, res) => {
-  if (urlDatabase[req.params.id].user !== req.cookies.user_id || !req.cookies.user_id) {
+  if (urlDatabase[req.params.id].userID !== req.cookies.user_id) {
     return res.status(401).send(`Login required to view your URL page. Click <a href="/login">here</a> to login`);
   } else {
     const templateVars = {
@@ -130,6 +130,8 @@ app.get("/urls/:id", (req, res) => {
     res.render("urls_show", templateVars);
   }
 });
+
+
 //redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
@@ -139,19 +141,35 @@ app.get("/u/:id", (req, res) => {
     res.redirect(longURL);
   }
 });
+
 // removes a URL resource and once deleted redirects to the "/urls" page.
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).send("This short URL was not found in our system");
+  }
+  if (urlDatabase[req.params.id].userID !== req.cookies.user_id) {
+    return res.status(401).send(`Login Required! You are not authorized to make changes to this URL. Click <a href="/login">here</a> to login`);
+  } else {
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
+  }
 });
+
 //Updates a URL resource and redirects back to "/urls" page.
 app.post("/urls/:id/edit", (req, res) => {
-  urlDatabase[req.params.id].longURL = req.body.newURL;
-  res.redirect("/urls");
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).send("This short URL was not found in our system");
+  }
+  if (urlDatabase[req.params.id].userID !== req.cookies.user_id) {
+    return res.status(401).send(`Login Required! You are not authorized to make changes to this URL. Click <a href="/login">here</a> to login`);
+  } else {
+    urlDatabase[req.params.id].longURL = req.body.newURL;
+    res.redirect("/urls");
+  }
 });
 
 
-//Login page and endpoint handler
+//Login page and /login endpoint handler
 app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
@@ -182,7 +200,7 @@ app.post("/logout", (req, res) => {
 });
 
 
-//Registration page and endpoint handler
+//Registration page and /register endpoint handler
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
