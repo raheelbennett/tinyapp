@@ -21,12 +21,20 @@ const userLookup = (searchThisEmail) => {
     }
   } return null;
 };
+const urlsForUser = (id) => {
+  let returnURLDatabase = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      returnURLDatabase[url] = urlDatabase[url];
+    }
+  } return returnURLDatabase;
+};
 
 //databases
 const urlDatabase = {
   "b6UTxQ": {
     longURL: "https://www.tsn.ca",
-    userID: "useraJ48lW",
+    userID: "userRandomID",
   },
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
@@ -35,7 +43,7 @@ const urlDatabase = {
   "9sm5xK": {
     longURL: "http://www.google.com",
     userID: "userRandomID",
-  },  
+  },
 };
 const users = {
   "userRandomID": {
@@ -56,6 +64,7 @@ const users = {
 };
 
 
+
 //random endpoint handlers
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -70,13 +79,14 @@ app.get("/hello", (req, res) => {
 
 ///urls endponint handlers
 app.get("/urls", (req, res) => {
-  if (!req.cookies.user_id){
+  if (!req.cookies.user_id) {
     return res.status(401).send(`Login required to view URLs. Click <a href="/login">here</a> to login`);
   }
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
+  //we are using a helper function urlsForUser to filter out the urlDatabase for records that match the user id passed in as the argument. In our case it will be the value of the user_id cookie.
   const templateVars = {
     user: users[req.cookies.user_id],
-    urls: urlDatabase
+    urls: urlsForUser(req.cookies.user_id)
   };
   res.render("urls_index", templateVars);
 });
@@ -84,16 +94,16 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const randomID = generateRandomString();
   if (!req.cookies.user_id) {
-   return res.send("Need to be logged in to shorten URLs");
+    return res.send("Need to be logged in to shorten URLs");
   } else {
-  //the new  the id-longURL key-value pair are saved to the urlDatabase
-  urlDatabase[randomID] = {
-    longURL: req.body.longURL,
-    userID: req.cookies.user_id
-  }
-  console.log(urlDatabase);
-  res.status(200);
-  res.redirect(`/urls/${randomID}`);
+    //the new  the id-longURL key-value pair are saved to the urlDatabase
+    urlDatabase[randomID] = {
+      longURL: req.body.longURL,
+      userID: req.cookies.user_id
+    }
+    console.log(urlDatabase);
+    res.status(200);
+    res.redirect(`/urls/${randomID}`);
   }
 });
 app.get("/urls/new", (req, res) => {
@@ -103,17 +113,22 @@ app.get("/urls/new", (req, res) => {
   if (!templateVars.user) {
     res.redirect("/login");
   } else {
-  res.render("urls_new", templateVars);
+    res.render("urls_new", templateVars);
   }
 });
 //This page will display a single URL and its shortened form.
+//Only authorized user can view their url page.
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies.user_id],
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-  };
-  res.render("urls_show", templateVars);
+  if (urlDatabase[req.params.id].user !== req.cookies.user_id || !req.cookies.user_id) {
+    return res.status(401).send(`Login required to view your URL page. Click <a href="/login">here</a> to login`);
+  } else {
+    const templateVars = {
+      user: users[req.cookies.user_id],
+      id: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL,
+    };
+    res.render("urls_show", templateVars);
+  }
 });
 //redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
 app.get("/u/:id", (req, res) => {
@@ -144,7 +159,7 @@ app.get("/login", (req, res) => {
   if (templateVars.user) {
     res.redirect("/urls");
   } else {
-  res.render("user_login", templateVars);
+    res.render("user_login", templateVars);
   }
 });
 app.post("/login", (req, res) => {
@@ -175,7 +190,7 @@ app.get("/register", (req, res) => {
   if (templateVars.user) {
     res.redirect("/urls");
   } else {
-  res.render("user_register", templateVars);
+    res.render("user_register", templateVars);
   }
 });
 app.post("/register", (req, res) => {
