@@ -70,6 +70,9 @@ app.get("/hello", (req, res) => {
 
 ///urls endponint handlers
 app.get("/urls", (req, res) => {
+  if (!req.cookies.user_id){
+    return res.status(401).send(`Login required to view URLs. Click <a href="/login">here</a> to login`);
+  }
   // When sending variables to an EJS template, we need to send them inside an object, even if we are only sending one variable. This is so we can use the key of that variable (in the above case the key is urls) to access the data within our template.
   const templateVars = {
     user: users[req.cookies.user_id],
@@ -152,7 +155,7 @@ app.post("/login", (req, res) => {
     res.cookie("user_id", userFound.id);
     res.redirect("/urls");
   } else {
-    return res.status(403).send("The information provided does not match our records. Login Failed!");
+    return res.status(403).send(`Login Failed! The information provided does not match our records. Click <a href="/login">here</a> to return to the login page`);
   }
 });
 
@@ -180,10 +183,10 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
-    return res.status(400).send('Please enter a valid Email Address and Password to register');
+    return res.status(400).send(`Please enter a valid Email Address and Password to register. Click <a href="/register">here</a> to return to the registration page`);
   }
   if (userLookup(email)) {
-    return res.status(400).send('Email Address already in use');
+    return res.status(400).send(`Email Address already in use. Click <a href="/register">here</a> to return to the registration page`);
   } else {
     users[id] = {
       id,
