@@ -100,7 +100,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[randomID] = {
       longURL: req.body.longURL,
       userID: req.cookies.user_id
-    }
+    };
     res.status(200);
     res.redirect(`/urls/${randomID}`);
   }
