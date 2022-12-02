@@ -1,6 +1,4 @@
-const {generateRandomString, urlsForUser, getUserByEmail} = require("./helpers");
-
-
+const { generateRandomString, urlsForUser, getUserByEmail } = require("./helpers");
 const express = require("express");
 const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
@@ -15,14 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ["userID"],
-
-  // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 
 
-//databases
+//testing databases
 const urlDatabase = {
   "b6UTxQ": {
     longURL: "https://www.tsn.ca",
@@ -58,7 +54,10 @@ const users = {
 
 //random endpoint handlers
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
+});
+app.get("/home", (req, res) => {
+  res.redirect("/login");
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -96,6 +95,8 @@ app.post("/urls", (req, res) => {
     res.redirect(`/urls/${randomID}`);
   }
 });
+
+//endpoint handler for new urls submissions form interface.
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.session.userID],
@@ -159,7 +160,6 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
-
 //Login page and /login endpoint handler
 app.get("/login", (req, res) => {
   const templateVars = {
@@ -219,7 +219,7 @@ app.post("/register", (req, res) => {
     };
     req.session.userID = id;
     res.redirect("/urls");
-  } 
+  }
 });
 
 
