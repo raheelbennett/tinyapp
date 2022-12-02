@@ -2,7 +2,6 @@ const {generateRandomString, urlsForUser, getUserByEmail} = require("./helpers")
 
 
 const express = require("express");
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const app = express();
@@ -13,7 +12,6 @@ app.set("view engine", "ejs");
 
 //middleware
 app.use(express.urlencoded({ extended: true }));
-// app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ["userID"],
@@ -149,7 +147,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 //Updates a URL resource and redirects back to "/urls" page.
-app.post("/urls/:id/edit", (req, res) => {
+app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.status(404).send("This short URL was not found in our system");
   }
@@ -221,8 +219,7 @@ app.post("/register", (req, res) => {
     };
     req.session.userID = id;
     res.redirect("/urls");
-  } console.log(users);
-
+  } 
 });
 
 
