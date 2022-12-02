@@ -24,19 +24,34 @@ const userLookup = (searchThisEmail) => {
 
 //databases
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b6UTxQ": {
+    longURL: "https://www.tsn.ca",
+    userID: "useraJ48lW",
+  },
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "user2RandomID",
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "userRandomID",
+  },  
 };
 const users = {
-  userRandomID: {
+  "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
-  user2RandomID: {
+  "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
+  },
+  "useraJ48lW": {
+    id: "useraJ48lW",
+    email: "tom@gmail.com",
+    password: "newPass123",
   },
 };
 
@@ -69,7 +84,11 @@ app.post("/urls", (req, res) => {
    return res.send("Need to be logged in to shorten URLs");
   } else {
   //the new  the id-longURL key-value pair are saved to the urlDatabase
-  urlDatabase[randomID] = req.body.longURL;
+  urlDatabase[randomID] = {
+    longURL: req.body.longURL,
+    userID: req.cookies.user_id
+  }
+  console.log(urlDatabase);
   res.status(200);
   res.redirect(`/urls/${randomID}`);
   }
@@ -89,13 +108,13 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
   };
   res.render("urls_show", templateVars);
 });
 //redirects Short URLs to long urls, unless short url id is invalid, then it will send error 404
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   if (!longURL) {
     res.status(404).send("This short URL was not found in our system");
   } else {
@@ -109,7 +128,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 //Updates a URL resource and redirects back to "/urls" page.
 app.post("/urls/:id/edit", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
+  urlDatabase[req.params.id].longURL = req.body.newURL;
   res.redirect("/urls");
 });
 
