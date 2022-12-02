@@ -1,3 +1,6 @@
+const {generateRandomString, urlsForUser, getUserByEmail} = require("./helpers");
+
+
 const express = require("express");
 // const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
@@ -19,25 +22,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
-//helper functions
-const generateRandomString = () => {
-  return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
-};
-const getUserByEmail = (email, database) => {
-  for (const user in database) {
-    if (database[user].email === email) {
-      return database[user];
-    }
-  } return null;
-};
-const urlsForUser = (id) => {
-  let returnURLDatabase = {};
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      returnURLDatabase[url] = urlDatabase[url];
-    }
-  } return returnURLDatabase;
-};
+
 
 //databases
 const urlDatabase = {
@@ -94,7 +79,7 @@ app.get("/urls", (req, res) => {
   //we are using a helper function urlsForUser to filter out the urlDatabase for records that match the user id passed in as the argument. In our case it will be the value of the userID cookie.
   const templateVars = {
     user: users[req.session.userID],
-    urls: urlsForUser(req.session.userID)
+    urls: urlsForUser(req.session.userID, urlDatabase)
   };
   res.render("urls_index", templateVars);
 });
