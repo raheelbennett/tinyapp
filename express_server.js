@@ -23,10 +23,10 @@ app.use(cookieSession({
 const generateRandomString = () => {
   return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
 };
-const userLookup = (searchThisEmail) => {
-  for (const user in users) {
-    if (users[user].email === searchThisEmail) {
-      return users[user];
+const getUserByEmail = (email, database) => {
+  for (const user in database) {
+    if (database[user].email === email) {
+      return database[user];
     }
   } return null;
 };
@@ -191,7 +191,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userFound = userLookup(email);
+  const userFound = getUserByEmail(email, users);
   if (userFound && bcrypt.compareSync(password, userFound.hashedPassword)) {
     req.session.userID = userFound.id;
     res.redirect("/urls");
@@ -226,7 +226,7 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     return res.status(400).send(`Please enter a valid Email Address and Password to register. Click <a href="/register">here</a> to return to the registration page`);
   }
-  if (userLookup(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).send(`Email Address already in use. Click <a href="/register">here</a> to return to the registration page`);
   } else {
     users[id] = {
